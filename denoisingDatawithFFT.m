@@ -1,0 +1,79 @@
+clear;
+close all;
+clc;
+delta = 0.001;
+t = 0:delta:1;
+% Generating Signal
+xclean = sin(2*pi*50*t)+ sin(2*pi*120*t); % Sum of Two Cosines
+x = xclean + 2.5*randn(size(t)); % Noisy Signal;
+
+figure; set(gcf,'Position',[1500,200, 2000,2000]);
+subplot(5,1,1)
+plot(t,x,'c','LineWidth',3), hold on
+plot(t,xclean,'k','LineWidth',2.5)
+l1 = legend('Noisy','Clean'); set(l1,'FontSize',8)
+ylim([-10 10]); set(gca, 'FontSize',8)
+xlabel('time');
+ylabel('Amplitude');
+
+%% PSD of Clean Signal
+% Compute PSD
+N = length(t);
+X_f = fft(xclean,N); % Compute Frequency Spectrum
+PSD = X_f.*conj(X_f)/N; % PSD of Noisy Signal
+freq = 1/(delta*N)*(0:N); % freq Axis for Graph
+L = 1:floor(N/2);         % just to plot one side of Spectrum
+% plot PSD Now
+subplot(5,1,2); set(gca,'FontSize',16)
+plot(freq(L),PSD(L),'LineWidth',3), hold on
+set(gca,'FontSize',8);
+l1 = legend('Clean Signal');set(l1,'FontSize',8)
+xlabel('freq');
+ylabel('PSD');
+
+
+
+%% Plot PSD of Noise Signal
+% Compute PSD
+N = length(t);
+X_f = fft(x,N); % Compute Frequency Spectrum
+PSD = X_f.*conj(X_f)/N; % PSD of Noisy Signal
+freq = 1/(delta*N)*(0:N); % freq Axis for Graph
+L = 1:floor(N/2);         % just to plot one side of Spectrum
+% plot PSD Now
+subplot(5,1,3); set(gca,'FontSize',16)
+plot(freq(L),PSD(L),'LineWidth',3), hold on
+set(gca,'FontSize',8);
+l1 = legend('Noisy Signal');set(l1,'FontSize',8)
+xlabel('freq');
+ylabel('PSD');
+
+%% Use PSD to Filter Noise
+
+indices = PSD>100;  % Select indexes Components with PSD >100
+PSDclean = PSD.*indices; % remove all others
+X_clean = indices.*X_f; % Filter the smaller coeffs
+Xfilter = ifft(X_clean); % back to time domain Signal
+%% PLOT PSD OF FILTERED AND NOISY SIGNAL
+subplot(5,1,4)
+plot(freq(L),PSDclean(L),'-','Color',[0.5 0.1 0],'LineWidth',3), hold on
+% Plot Distorted Signal
+plot(freq(L),PSD(L),'.-','Color',[0.5 0.5 0],'LineWidth',0.5),
+set(gca,'FontSize',8);
+l1 = legend('filtered','Noisy');set(l1,'Fontsize',8);
+xlabel('freq');
+ylabel('PSD');
+
+%% Ploting the Filtered Signal
+subplot(5,1,5); set(gca,'FontSize',16)
+plot(t,Xfilter,'-','Color',[.5 .1 0],'LineWidth',2.5)
+l1 = legend('Filtered');set(l1,'FontSize',8)
+%l1 = legend('Noisy','Clean'); set(l1,'FontSize',8)
+ylim([-10 10]); set(gca, 'FontSize',8)
+xlabel('time');
+ylabel('Amplitude');
+
+
+
+
+
